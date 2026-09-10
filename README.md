@@ -75,7 +75,3 @@ habit-tracker/
   + PDF.js & Tesseract.js (Nhập thời gian biểu từ file PDF và Hình ảnh OCR)
   + Canvas Confetti (Hiệu ứng pháo hoa khi hoàn thành mục tiêu kỷ luật)
   + Supabase JS SDK (Tùy chọn đồng bộ dữ liệu đám mây đa thiết bị)
-
-================================================================================
-                    CHÚC BẠN XÂY DỰNG KỶ LUẬT BẢN THÂN THÀNH CÔNG!
-================================================================================
