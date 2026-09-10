@@ -6,8 +6,8 @@
 1. GIỚI THIỆU TỔNG QUAN
 --------------------------------------------------------------------------------
 ProHabit là ứng dụng web quản lý lối sống kỷ luật và theo dõi học tập chuyên sâu,
-kết hợp phong cách tối giản chuẩn điều hành của LinkedIn và trải nghiệm học tập
-chuyên nghiệp của Coursera.
+kết hợp phong cách tối giản chuẩn điều hành và trải nghiệm học tập
+chuyên nghiệp.
 
 Ứng dụng hoạt động theo triết lý "Offline-First" (Ưu tiên ngoại tuyến), lưu trữ
 toàn bộ dữ liệu trực tiếp trong LocalStorage của trình duyệt, không tốn chi phí
@@ -47,15 +47,6 @@ trên cả máy tính lẫn điện thoại thông minh.
   + Quản lý công việc theo hạn chót (Deadline), mức độ ưu tiên (Khẩn cấp, Cao, Bình thường).
   + Tự động phát hiện và gửi cảnh báo việc quá hạn (Overdue Alert Banner).
   + Thống kê số lượng việc chưa hoàn thành theo thời gian thực.
-
-[D] HỒ SƠ CÁ NHÂN & TỐI ƯU KHÔNG GIAN LÀM VIỆC (ULTRA-WIDE CANVAS)
-- Chỉnh sửa hồ sơ cá nhân (Edit Profile):
-  + Tùy chỉnh Họ tên, Chức danh/Khẩu hiệu kỷ luật, Giới thiệu bản thân (Bio).
-  + Hỗ trợ Avatar chữ lồng (Initials) hoặc dán link ảnh thật từ internet.
-- Thiết kế Ultra-Wide (Khung hiển thị rộng đến 1820px, chiếm 96% màn hình):
-  + Tự động ẩn thanh bên phải ở tab Thói quen để tăng diện tích bảng tính lên hơn 1450px.
-  + Nút "Ẩn thông tin chung" / "Hiện thông tin chung" 1-Click: Thu gọn cột trái
-    để trải nghiệm màn hình rộng tối đa, kèm tab nổi mép trái để hoàn nguyên tức thì.
 - Chế độ hiển thị kép:
   + Giao diện Tối (Obsidian Dark) - Chuyên nghiệp, bảo vệ mắt khi làm việc đêm.
   + Giao diện Sáng (Executive Light) - Tươi sáng, độ tương phản cao, chuẩn văn phòng.
@@ -74,43 +65,10 @@ habit-tracker/
 ├── README.txt        # Tệp hướng dẫn & mô tả dự án (Bản Text)
 └── README.md         # Tệp hướng dẫn & mô tả dự án (Bản Markdown cho GitHub)
 
---------------------------------------------------------------------------------
-4. HƯỚNG DẪN CÀI ĐẶT & CHẠY DỰ ÁN
---------------------------------------------------------------------------------
-
-[Cách 1: Chạy trực tiếp trên trình duyệt]
-- Không cần cài đặt bất kỳ thư viện hay framework phức tạp nào.
-- Chỉ cần nhấp đúp chuột vào file index.html để mở trong trình duyệt.
-
-[Cách 2: Chạy qua Local Web Server]
-- Mở Terminal hoặc PowerShell tại thư mục dự án:
-    cd "C:\Users\Tuan Kiet\.gemini\antigravity\scratch\habit-tracker"
-    python -m http.server 8888
-- Mở trình duyệt và truy cập: http://localhost:8888
-
-[Cách 3: Cài đặt thành App trên thiết bị (PWA)]
-- Trên Máy tính: Bấm vào biểu tượng Cài đặt trên thanh địa chỉ của Chrome/Edge -> Chọn "Cài đặt ProHabit".
-- Trên Điện thoại: Mở link trên Safari (iOS) hoặc Chrome (Android) -> Bấm nút Chia sẻ/Menu -> Chọn "Thêm vào Màn hình chính" (Add to Home Screen).
-
---------------------------------------------------------------------------------
-5. HƯỚNG DẪN CẬP NHẬT CODE LÊN GITHUB
---------------------------------------------------------------------------------
-Mỗi khi bạn chỉnh sửa mã nguồn trên máy tính, để cập nhật phiên bản mới lên trang
-web trực tuyến GitHub Pages:
-
-1. Mở PowerShell hoặc Git Bash tại thư mục dự án:
-   cd "C:\Users\Tuan Kiet\.gemini\antigravity\scratch\habit-tracker"
-
-2. Chạy các lệnh Git sau:
-   git add .
-   git commit -m "Cập nhật tính năng mới"
-   git push origin main
-
-3. Sau khoảng 30 - 60 giây, GitHub Pages sẽ tự động cập nhật bản mới nhất tại:
    https://ntkiet05.github.io/ProHabit/
 
 --------------------------------------------------------------------------------
-6. CÔNG NGHỆ SỬ DỤNG
+4. CÔNG NGHỆ SỬ DỤNG
 --------------------------------------------------------------------------------
 - Ngôn ngữ: HTML5, CSS3, JavaScript (ES6+ Native, No Framework).
 - Phông chữ: Google Fonts (Nunito, Plus Jakarta Sans, Outfit).
