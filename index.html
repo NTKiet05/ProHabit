@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bro Habit Tracker - Level Up Your Life</title>
+    <meta name="description" content="Spreadsheet-style habit tracker dashboard. Track your daily progress, weekly stats, overall wellness, sleep, and mood in a premium dark mode dashboard.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=8">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#030712">
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- LinkedIn Global Top Navigation Bar (Fixed Top) -->
+    <header class="linkedin-global-header" id="linkedin-global-header">
+        <div class="header-inner-container">
+            <!-- Left: ProHabit Brand Text (No logo, shifted left) & Search Box -->
+            <div class="header-left-col">
+                <a href="#" class="prohabit-brand-logo" onclick="switchAppTab('habits'); return false;" title="ProHabit Platform">
+                    <span class="prohabit-brand-text">ProHabit</span>
+                </a>
+                <div class="linkedin-search-wrapper">
+                    <input type="text" id="global-search-input" class="linkedin-search-input" placeholder="Tìm kiếm thói quen, bài học, việc..." autocomplete="off">
+                </div>
+            </div>
+
+            <!-- Center: LinkedIn Nav Tabs -->
+            <nav class="linkedin-nav-tabs" id="linkedin-nav-tabs">
+                <button type="button" class="linkedin-nav-item shortcut-item active" data-tab="habits" id="nav-tab-habits" title="Bảng thói quen & Năng suất">
+                    <span class="nav-item-title">Thói quen</span>
+                </button>
+                <button type="button" class="linkedin-nav-item shortcut-item" data-tab="classroom" id="nav-tab-classroom" title="Lớp học">
+                    <span class="nav-item-title">Lớp học</span>
+                </button>
+                <button type="button" class="linkedin-nav-item shortcut-item" data-tab="tasks" id="nav-tab-tasks" title="Thời gian biểu & Việc cần làm">
+                    <span class="nav-item-title">Lịch & Việc</span>
+                </button>
+            </nav>
+
+            <!-- Right: Actions, Month Select, Theme, Profile -->
+            <div class="header-right-col">
+                <div class="month-selector-wrapper">
+                    <label for="month-select" class="nav-month-label">Tháng:</label>
+                    <select id="month-select" class="month-select linkedin-month-select">
+                        <option value="0">Tháng 1</option>
+                        <option value="1">Tháng 2</option>
+                        <option value="2">Tháng 3</option>
+                        <option value="3">Tháng 4</option>
+                        <option value="4">Tháng 5</option>
+                        <option value="5">Tháng 6</option>
+                        <option value="6">Tháng 7</option>
+                        <option value="7">Tháng 8</option>
+                        <option value="8" selected>Tháng 9</option>
+                        <option value="9">Tháng 10</option>
+                        <option value="10">Tháng 11</option>
+                        <option value="11">Tháng 12</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-secondary nav-pill-btn" id="theme-toggle-btn" aria-label="Toggle theme">
+                    <span id="theme-toggle-text">Tối</span>
+                </button>
+
+                <button type="button" class="btn btn-secondary nav-pill-btn nav-expand-btn" id="toggle-expand-btn" title="Ẩn / Hiện thanh thông tin chung (Cột trái)">
+                    <span id="expand-btn-text">Ẩn thông tin chung</span>
+                </button>
+
+                <button class="btn btn-secondary nav-pill-btn nav-reset-btn" id="reset-all-btn" title="Reset toàn bộ thói quen và nhật ký về mặc định">
+                    Reset
+                </button>
+
+                <div class="linkedin-user-badge" id="user-profile" style="cursor: pointer;" title="Bấm để chỉnh sửa hồ sơ">
+                    <div class="user-avatar-circle" id="header-avatar-circle">
+                        <span class="user-avatar-letters" id="header-avatar-letters">TK</span>
+                        <span class="user-online-dot"></span>
+                    </div>
+                    <div class="user-info-text">
+                        <span class="user-name-title" id="user-email-display">Kỷ Luật & Học Tập</span>
+                        <span class="user-status-sub" id="header-user-status">Hội viên Pro</span>
+                    </div>
+                    <button class="btn btn-secondary btn-xs" id="logout-btn" style="display:none;">Thoát</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Bottom Navigation Dock (Dành cho màn hình < 768px) -->
+    <nav class="shortcut-menu mobile-bottom-dock" id="shortcut-menu">
+        <button type="button" class="shortcut-item active" data-tab="habits" id="mob-tab-habits" title="Bảng thói quen">
+            <span class="shortcut-tab-text">Thói quen</span>
+        </button>
+        <button type="button" class="shortcut-item" data-tab="classroom" id="mob-tab-classroom" title="Lớp học Coursera">
+            <span class="shortcut-tab-text">Lớp học</span>
+        </button>
+        <button type="button" class="shortcut-item" data-tab="tasks" id="mob-tab-tasks" title="Thời gian biểu & Việc">
+            <span class="shortcut-tab-text">Lịch & Việc</span>
+        </button>
+    </nav>
+
+    <!-- Main LinkedIn 3-Column Layout Canvas -->
+    <div class="linkedin-canvas">
+        <!-- Floating Button to Show Left Rail When Hidden -->
+        <button type="button" class="floating-show-rail-btn" id="floating-show-rail-btn" title="Bấm để hiện lại thanh thông tin chung" style="display: none;">
+            <span>▶</span>
+        </button>
+
+        <!-- Top Live Clock & Motivational Quote Bar (Đưa lên vị trí cao, trang trọng) -->
+        <div class="top-announcement-bar">
+            <div class="top-bar-clock">
+                <span class="header-datetime" id="header-datetime">Đang tải giờ...</span>
+            </div>
+            <div class="top-bar-quote">
+                <span class="quote-mark-top">“</span>
+                <span class="header-quote" id="header-quote">Kỷ luật là cầu nối giữa mục tiêu và thành tựu.</span>
+                <span class="quote-mark-top">”</span>
+            </div>
+        </div>
+
+        <div class="linkedin-layout-grid">
+
+            <!-- ============================================================ -->
+            <!-- CỘT TRÁI: HỒ SƠ CÁ NHÂN & CHUỖI KỶ LUẬT                     -->
+            <!-- ============================================================ -->
+            <aside class="linkedin-left-rail">
+                <!-- User Profile Card -->
+                <div class="linkedin-card profile-card">
+                    <div class="profile-card-cover"></div>
+                    <div class="profile-avatar-wrap">
+                        <div class="profile-avatar-large" id="profile-avatar-large" style="cursor: pointer;" title="Bấm để chỉnh sửa hồ sơ">
+                            <span class="avatar-letters" id="profile-avatar-letters">TK</span>
+                            <span class="avatar-online-dot"></span>
+                        </div>
+                    </div>
+                    <div class="profile-card-content">
+                        <h2 class="profile-user-name" id="profile-user-name" style="cursor: pointer;" title="Bấm để chỉnh sửa hồ sơ">Nguyễn Tuấn Kiệt</h2>
+                        <p class="profile-user-headline" id="profile-user-headline">Executive Discipline & Continuous Learning</p>
+                        
+                        <div class="profile-card-actions">
+                            <button type="button" class="btn btn-outline btn-xs edit-profile-btn" id="open-edit-profile-btn" title="Chỉnh sửa thông tin hồ sơ cá nhân">
+                                Chỉnh sửa hồ sơ
+                            </button>
+                            <button type="button" class="btn btn-outline btn-xs toggle-rail-action-btn" id="hide-left-rail-btn" title="Ẩn thanh thông tin chung để tối đa diện tích làm việc">
+                                Ẩn thông tin chung
+                            </button>
+                        </div>
+                        
+                        <div class="profile-divider"></div>
+                        
+                        <!-- Mini Stats List -->
+                        <div class="profile-stats-list">
+                            <div class="profile-stat-row">
+                                <span class="p-stat-label">🔥 Chuỗi kỷ luật:</span>
+                                <strong class="p-stat-val text-accent-streak" id="left-rail-streak">0 ngày</strong>
+                            </div>
+                            <div class="profile-stat-row">
+                                <span class="p-stat-label">⚡ Điểm năng suất:</span>
+                                <strong class="p-stat-val text-accent-score" id="left-rail-score">0/100</strong>
+                            </div>
+                            <div class="profile-stat-row">
+                                <span class="p-stat-label">Thứ hạng:</span>
+                                <span class="profile-tier-chip" id="left-rail-badge">Đang tính</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-divider"></div>
+
+                        <!-- Quick Navigation Links -->
+                        <div class="profile-quick-links">
+                            <button type="button" class="profile-link-btn" onclick="switchAppTab('habits'); return false;">
+                                <span>Bảng theo dõi thói quen</span>
+                            </button>
+                            <button type="button" class="profile-link-btn" onclick="switchAppTab('classroom'); return false;">
+                                <span>Lớp học</span>
+                            </button>
+                            <button type="button" class="profile-link-btn" onclick="switchAppTab('tasks'); return false;">
+                                <span>Thời gian biểu & Việc cần làm</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ============================================================ -->
+            <!-- CỘT GIỮA: FEED KHÔNG GIAN LÀM VIỆC CHÍNH (3 TAB PANES)      -->
+            <!-- ============================================================ -->
+            <main class="linkedin-feed-rail">
+                <!-- TAB PANE 1: HABIT TRACKER & WELLNESS (BẢNG THÓI QUEN)        -->
+                <!-- ============================================================ -->
+                <div class="app-tab-pane active" id="pane-habits">
+                <!-- Productivity & Focus Suite Section -->
+                <section class="productivity-section" id="sec-productivity">
+                    <div class="productivity-card">
+                        <!-- Left: Daily Productivity Score Gauge -->
+                        <div class="prod-score-box">
+                            <div class="prod-score-ring">
+                                <svg class="prod-ring-svg" viewBox="0 0 100 100">
+                                    <circle class="prod-ring-bg" cx="50" cy="50" r="42"></circle>
+                                    <circle class="prod-ring-fill" id="prod-ring-fill" cx="50" cy="50" r="42"></circle>
+                                </svg>
+                                <div class="prod-score-content">
+                                    <span class="prod-score-val" id="prod-score-val">0</span>
+                                    <span class="prod-score-unit">/100</span>
+                                </div>
+                            </div>
+                            <div class="prod-info-col">
+                                <div class="prod-title-row">
+                                    <span class="prod-badge" id="prod-badge">⚡ Đang tính điểm</span>
+                                    <span class="prod-streak" id="prod-streak">🔥 0 ngày kỷ luật</span>
+                                </div>
+                                <h3 class="prod-heading">Chỉ số Năng suất Cá nhân (Productivity Score)</h3>
+                                <p class="prod-desc" id="prod-desc">Hoàn thành thói quen hôm nay và không để công việc trễ hạn để tối đa điểm!</p>
+                            </div>
+                        </div>
+
+                        <!-- Right: Pomodoro Deep Work Focus Timer -->
+                        <div class="pomodoro-box">
+                            <div class="pomo-header">
+                                <span class="pomo-tag">DEEP WORK FOCUS</span>
+                                <span class="pomo-task-name" id="pomo-task-name">Phiên 25 phút</span>
+                            </div>
+                            <div class="pomo-timer-display" id="pomo-timer-display">25:00</div>
+                            <div class="pomo-controls">
+                                <button type="button" class="btn btn-sm btn-primary pomo-btn" id="pomo-start-btn">
+                                    Bắt đầu
+                                </button>
+                                <button type="button" class="btn btn-sm btn-secondary pomo-btn" id="pomo-reset-btn">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Top Analytics Section -->
+                <section class="analytics-section">
+                    <!-- Daily Progress Chart -->
+                    <div class="chart-card daily-progress-card">
+                        <div class="card-header">
+                            <h3>Tiến độ Hàng ngày (Daily Progress)</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" id="daily-chart-container">
+                                <!-- Custom SVG Chart Rendered dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Progress Chart -->
+                    <div class="chart-card weekly-progress-card">
+                        <div class="card-header">
+                            <h3>Tiến độ Hàng tuần (Weekly Progress)</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" id="weekly-chart-container">
+                                <!-- Custom SVG Chart Rendered dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats and Donut Column -->
+                    <div class="stats-column">
+                        <!-- Metric Cards -->
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Mục tiêu (Goal)</span>
+                                <span class="metric-value" id="goal-stat">0</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Đạt được (Completed)</span>
+                                <span class="metric-value" id="completed-stat">0</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Còn lại (Left)</span>
+                                <span class="metric-value" id="left-stat">0</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Overall Stats Donut -->
+                        <div class="donut-card">
+                            <div class="card-header">
+                                <h3>Tổng quan (Overall Stats)</h3>
+                            </div>
+                            <div class="card-body donut-body">
+                                <div class="donut-chart-wrapper">
+                                    <svg width="120" height="120" viewBox="0 0 120 120" class="donut-svg">
+                                        <circle class="donut-ring" cx="60" cy="60" r="50" fill="transparent" stroke="#1e293b" stroke-width="12"></circle>
+                                        <circle class="donut-segment" id="donut-segment" cx="60" cy="60" r="50" fill="transparent" stroke="url(#donut-grad)" stroke-width="12" stroke-dasharray="314.16 314.16" stroke-dashoffset="314.16" stroke-linecap="round" transform="rotate(-90 60 60)"></circle>
+                                        <defs>
+                                            <linearGradient id="donut-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stop-color="#8b5cf6" />
+                                                <stop offset="100%" stop-color="#3b82f6" />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    <div class="donut-percentage" id="donut-percentage">0%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Main Grid & Analysis Section -->
+                <section class="grid-section" id="sec-grid">
+                    <div class="grid-outer-wrapper">
+                        <div class="grid-scroll-container" id="grid-scroll-container">
+                            <table class="tracker-table" id="tracker-table">
+                                <thead>
+                                    <!-- Rendered dynamically by JavaScript -->
+                                </thead>
+                                <tbody>
+                                    <!-- Rendered dynamically by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Habit Management Section -->
+                <section class="habit-manager-section" id="sec-habits">
+                    <div class="habit-manager-card">
+                        <div class="card-header">
+                            <h3>Thiết lập & Quản lý Thói quen (Habit Settings)</h3>
+                        </div>
+                        <div class="card-body habit-manager-body">
+                            <!-- Left Panel: Form for adding -->
+                            <div class="add-habit-panel">
+                                <h4>Thêm thói quen mới</h4>
+                                <form id="add-habit-form" class="habit-inline-form">
+                                    <div class="inline-form-group name-group">
+                                        <label for="habit-name">Tên thói quen</label>
+                                        <input type="text" id="habit-name" placeholder="Ví dụ: Đi bộ, Học tiếng Anh..." required>
+                                    </div>
+                                    <div class="inline-form-group emoji-group" style="display: none;">
+                                        <label for="habit-emoji">Emoji</label>
+                                        <input type="text" id="habit-emoji" placeholder="" max="2" value="">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary inline-submit-btn">Thêm thói quen</button>
+                                </form>
+                            </div>
+                            
+                            <!-- Right Panel: List for managing -->
+                            <div class="list-habit-panel">
+                                <h4>Danh sách thói quen hiện tại</h4>
+                                <ul class="manage-habits-grid" id="manage-habits-list">
+                                    <!-- Populated dynamically by JavaScript -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bottom Wellness & Top Habits Row -->
+                <section class="bottom-section">
+                    <!-- Wellness Section -->
+                    <div class="wellness-card" id="sec-wellness">
+                        <div class="card-header">
+                            <h3>Sức khỏe & Tinh thần (Overall Wellness)</h3>
+                            <div class="wellness-legend">
+                                <span class="legend-item"><span class="legend-dot mood-dot"></span>Tâm trạng (Mood)</span>
+                                <span class="legend-item"><span class="legend-dot sleep-dot"></span>Ngủ (Hours of Sleep)</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="wellness-grid-container" id="wellness-grid-container">
+                                <!-- Rendered dynamically by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Habits Leaderboard -->
+                    <div class="top-habits-card" id="sec-leaderboard">
+                        <div class="card-header">
+                            <h3>10 Thói quen hàng đầu (TOP 10 HABITS)</h3>
+                        </div>
+                        <div class="card-body">
+                            <ol class="top-habits-list" id="top-habits-list">
+                                <!-- Rendered dynamically by JavaScript -->
+                            </ol>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- TAB PANE 2: COURSERA MINI CLASSROOM (LỚP HỌC KỶ LUẬT)       -->
+            <!-- ============================================================ -->
+            <div class="app-tab-pane" id="pane-classroom">
+                <section class="classroom-section" id="sec-classroom">
+                    <!-- NỘI DUNG KHÓA HỌC CHÍNH COURSERA -->
+                    <div class="classroom-main-content">
+                            <!-- Active Course Hero Banner -->
+                            <div class="coursera-hero-banner" id="coursera-hero-banner">
+                                <div class="hero-course-info">
+                                    <div class="hero-course-badge" id="hero-course-category">Kỹ thuật Điều khiển Tự động</div>
+                                    <h2 class="hero-course-title" id="classroom-course-title">Lý thuyết & Kỹ thuật Điều khiển Tự động (Control Systems)</h2>
+                                    <p class="hero-course-desc" id="classroom-course-desc">Lộ trình tự học kỷ luật cao theo từng Chặng. Bắt buộc điểm danh và hoàn thành tiết học mỗi ngày.</p>
+                                    
+                                    <div class="hero-course-meta">
+                                        <span class="hero-meta-item" id="hero-course-phase">Chặng hiện tại: Chặng 1</span>
+                                        <span class="hero-meta-item" id="hero-course-lesson-count">11 bài học</span>
+                                        <span class="hero-meta-item" id="hero-course-duration">Chuẩn: 25p / tiết</span>
+                                    </div>
+                                </div>
+
+                                <!-- Progress & Quick Action -->
+                                <div class="hero-progress-box">
+                                    <div class="hero-progress-header">
+                                        <span>Tiến độ hoàn thành</span>
+                                        <strong id="hero-progress-pct">0%</strong>
+                                    </div>
+                                    <div class="hero-progress-bar-wrap">
+                                        <div class="hero-progress-bar-fill" id="hero-progress-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <div class="hero-progress-sub" id="hero-progress-sub">Hoàn thành 0 / 11 bài học</div>
+                                    <button type="button" class="btn btn-primary btn-sm hero-start-btn" id="classroom-quick-study-btn">
+                                        Vào Bài Học Tiếp Theo
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Coursera Navigation Subtabs -->
+                            <div class="coursera-subnav-bar">
+                                <div class="coursera-subtabs">
+                                    <button type="button" class="coursera-subtab-btn active" data-subtab="curriculum" id="subtab-btn-curriculum">
+                                        Lộ trình & Bài học
+                                    </button>
+                                    <button type="button" class="coursera-subtab-btn" data-subtab="resources" id="subtab-btn-resources">
+                                        Kho tài liệu & Slide
+                                    </button>
+                                    <button type="button" class="coursera-subtab-btn" data-subtab="attendance" id="subtab-btn-attendance">
+                                        Điểm danh
+                                    </button>
+                                </div>
+                                <div class="coursera-filter-area" id="coursera-filter-area">
+                                    <select id="curriculum-phase-filter" class="curriculum-filter-select">
+                                        <option value="all">Tất cả các chặng</option>
+                                        <option value="Chặng 1">Chặng 1</option>
+                                        <option value="Chặng 2">Chặng 2</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Subtab Pane 1: Curriculum & Lessons (Default) -->
+                            <div class="coursera-subpane active" id="coursera-subpane-curriculum">
+                                <div class="curriculum-container">
+                                    <div class="curriculum-table-responsive">
+                                        <table class="curriculum-table" id="curriculum-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="col-stt" width="55">STT</th>
+                                                    <th class="col-module" width="220">Chủ đề / Module</th>
+                                                    <th class="col-lesson" width="280">Bài học / Nội dung</th>
+                                                    <th class="col-materials">Tài liệu & Video bài giảng</th>
+                                                    <th class="col-attendance" width="230">Điểm danh & Kỷ luật</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="curriculum-tbody">
+                                                <!-- Rendered dynamically by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subtab Pane 2: Resources & Reading Materials -->
+                            <div class="coursera-subpane" id="coursera-subpane-resources" style="display: none;">
+                                <div class="course-resources-container">
+                                    <div class="resources-header-row">
+                                        <div>
+                                            <h3 style="font-size: 1.1rem; margin: 0 0 0.25rem 0; color: var(--text-primary);">Tài Liệu Học Tập & Tham Khảo Đính Kèm</h3>
+                                            <p style="font-size: 0.85rem; margin: 0; color: var(--text-muted);">Sách giáo trình, slide bài giảng, code mẫu thực hành và cheat sheets của khóa học.</p>
+                                        </div>
+                                        <button type="button" class="btn btn-secondary btn-sm" id="add-course-resource-btn">
+                                            + Thêm Tài Liệu Mới
+                                        </button>
+                                    </div>
+                                    <div class="resources-grid" id="course-resources-grid">
+                                        <!-- Populated dynamically by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subtab Pane 3: Attendance & Discipline Dossier -->
+                            <div class="coursera-subpane" id="coursera-subpane-attendance" style="display: none;">
+                                <!-- KPIs -->
+                                <div class="classroom-kpis">
+                                    <!-- KPI 1: Attendance Rate -->
+                                    <div class="classroom-kpi-card">
+                                        <div class="kpi-info">
+                                            <div class="kpi-label">TỶ LỆ CHUYÊN CẦN</div>
+                                            <div class="kpi-value-row">
+                                                <span class="kpi-val" id="kpi-attendance-rate">100%</span>
+                                                <span class="kpi-status-badge badge-green" id="kpi-attendance-badge">Đạt Chuẩn</span>
+                                            </div>
+                                            <div class="kpi-subtext" id="kpi-attendance-sub">Chuẩn tối thiểu: 80% để không bị cảnh cáo</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- KPI 2: Today's Roll Call Status -->
+                                    <div class="classroom-kpi-card" id="kpi-card-today">
+                                        <div class="kpi-info">
+                                            <div class="kpi-label">ĐIỂM DANH HÔM NAY</div>
+                                            <div class="kpi-value-row">
+                                                <span class="kpi-val" id="kpi-today-status">Chưa Điểm Danh</span>
+                                            </div>
+                                            <div class="kpi-subtext" id="kpi-today-sub">Hạn chót đóng cửa lúc 23:00 hôm nay</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- KPI 3: Phase Countdown -->
+                                    <div class="classroom-kpi-card">
+                                        <div class="kpi-info">
+                                            <div class="kpi-label">THỜI HẠN CHẶNG HIỆN TẠI</div>
+                                            <div class="kpi-value-row">
+                                                <span class="kpi-val" id="kpi-phase-countdown">Còn 21 ngày</span>
+                                                <span class="kpi-phase-tag" id="kpi-phase-name">Chặng 1 (3 tuần)</span>
+                                            </div>
+                                            <div class="kpi-progress-bar-wrap">
+                                                <div class="kpi-progress-bar" id="kpi-phase-prog" style="width: 0%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Attendance History Log Table -->
+                                <div class="attendance-history-card">
+                                    <div class="card-header">
+                                        <h3>Nhật Ký Điểm Danh & Thu Hoạch Tiết Học</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="attendance-log-list" id="attendance-log-list">
+                                            <!-- Populated dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- TAB PANE 3: SCHEDULE & TODO TASKS (LỊCH TRÌNH & NHIỆM VỤ)   -->
+            <!-- ============================================================ -->
+            <div class="app-tab-pane" id="pane-tasks">
+                <!-- Daily Schedule Card -->
+                <div class="schedule-card" id="sec-schedule" style="margin-bottom: 1.5rem;">
+                    <div class="card-header">
+                        <h3>Thời gian biểu hàng ngày (DAILY SCHEDULE)</h3>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <button class="btn btn-secondary btn-sm" id="edit-schedule-btn">Quản lý</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="schedule-timeline" id="schedule-timeline">
+                            <!-- Populated dynamically by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TODO List Section -->
+                <section class="todo-section" id="sec-todo">
+                    <div class="todo-card">
+                        <div class="card-header">
+                            <h3>Quản lý công việc cần làm (TODO List)</h3>
+                            <div class="todo-header-actions">
+                                <span class="todo-count-badge" id="todo-count-badge">0 việc chưa hoàn thành</span>
+                            </div>
+                        </div>
+                        <div class="card-body todo-body">
+                            <!-- Left Panel: Form for adding -->
+                            <div class="add-todo-panel">
+                                <h4>Thêm nhiệm vụ mới</h4>
+                                <form id="add-todo-form" class="todo-inline-form">
+                                    <div class="inline-form-group title-group">
+                                        <label for="todo-title-input">Tiêu đề công việc</label>
+                                        <input type="text" id="todo-title-input" placeholder="Ví dụ: Nộp bài tập Thiết kế vi mạch..." required>
+                                    </div>
+                                    <div class="inline-form-group desc-group">
+                                        <label for="todo-desc-input">Chi tiết nhiệm vụ</label>
+                                        <textarea id="todo-desc-input" placeholder="Mô tả cụ thể các yêu cầu hoặc ghi chú..." rows="2"></textarea>
+                                    </div>
+                                    <div class="inline-form-group deadline-group">
+                                        <label for="todo-deadline-input">Thời gian hoàn thành (Deadline)</label>
+                                        <input type="datetime-local" id="todo-deadline-input" required>
+                                        <div class="deadline-presets">
+                                            <button type="button" class="preset-btn" data-offset="30">+30 phút</button>
+                                            <button type="button" class="preset-btn" data-offset="60">+1 giờ</button>
+                                            <button type="button" class="preset-btn" data-offset="180">+3 giờ</button>
+                                            <button type="button" class="preset-btn" data-preset="today22">Tối nay 22h</button>
+                                            <button type="button" class="preset-btn" data-preset="tomorrow09">Mai 9h sáng</button>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary inline-submit-btn" style="width: 100%; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                                        Thêm việc cần làm
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <!-- Right Panel: List for managing -->
+                            <div class="list-todo-panel">
+                                <h4>Danh sách nhiệm vụ</h4>
+                                <div class="todo-list-container">
+                                    <ul class="todo-list" id="todo-list">
+                                        <!-- Populated dynamically by JavaScript -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- ============================================================ -->
+        <!-- CỘT PHẢI: KHÓA HỌC COURSERA & GỢI Ý KỸ NĂNG (RIGHT RAIL)     -->
+        <!-- ============================================================ -->
+        <aside class="linkedin-right-rail">
+            <!-- Khóa học đang theo đuổi (Coursera Learning Catalog) -->
+            <div class="linkedin-card classroom-sidebar-card">
+                <div class="sidebar-header-box">
+                    <div class="sidebar-title-wrap">
+                        <span class="sidebar-badge-dot"></span>
+                        <h3 class="sidebar-title">Khóa học đang theo đuổi</h3>
+                    </div>
+                    <p class="sidebar-subtitle">Bấm vào khóa học để chuyển lộ trình</p>
+                </div>
+
+                <!-- Actions in right sidebar -->
+                <div class="sidebar-actions-wrap">
+                    <button type="button" class="btn btn-primary btn-sm sidebar-primary-btn" id="classroom-add-course-btn">
+                        + Tạo Khóa Học Mới
+                    </button>
+                    <div class="sidebar-sub-actions">
+                        <button type="button" class="btn btn-secondary btn-xs" id="classroom-add-lesson-btn">
+                            + Thêm Bài Học
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-xs" id="classroom-import-excel-btn">
+                            Nhập Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vertical Course List -->
+                <div class="course-chips-container course-vertical-list" id="course-chips-container">
+                    <!-- Populated dynamically: Course cards stacked vertically -->
+                </div>
+            </div>
+        </aside>
+    </div><!-- /.linkedin-layout-grid -->
+</div><!-- /.linkedin-canvas -->
+
+    <!-- Authentication Overlay Modal -->
+    <div id="auth-overlay" class="auth-overlay" style="display: none;">
+        <div class="auth-card">
+            <!-- Warning block if Supabase credentials are missing -->
+            <div id="supabase-config-warning" class="auth-warning" style="display: none;">
+                Chưa cấu hình Supabase! Vui lòng mở file <code>app.js</code> và điền <code>SUPABASE_URL</code> & <code>SUPABASE_ANON_KEY</code> ở đầu file để đồng bộ dữ liệu đám mây.
+            </div>
+            
+            <div class="auth-header">
+                <h2>Đồng bộ thói quen</h2>
+                <p>Đăng nhập tài khoản để lưu trữ dữ liệu của bạn trực tuyến và truy cập trên mọi thiết bị.</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login">Đăng nhập</button>
+                <button class="auth-tab" id="tab-signup">Đăng ký mới</button>
+            </div>
+            <!-- Inline Error container -->
+            <div id="auth-error-msg" class="auth-error-message" style="display: none;"></div>
+            
+            <form id="auth-form" class="auth-form">
+                <div class="form-group">
+                    <label for="auth-email">Địa chỉ Email</label>
+                    <input type="email" id="auth-email" placeholder="example@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="auth-password">Mật khẩu</label>
+                    <input type="password" id="auth-password" placeholder="Tối thiểu 6 ký tự" minlength="6" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="auth-submit-btn">Đăng nhập</button>
+            </form>
+            
+            <div class="auth-footer">
+                <p id="auth-switch-text">Chưa có tài khoản? <span class="auth-link" id="auth-switch-link">Đăng ký ngay</span></p>
+                <div class="divider"><span>hoặc</span></div>
+                <button class="btn btn-secondary" id="use-offline-btn" style="width: 100%;">Sử dụng Offline (Lưu cục bộ)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Editor Modal Overlay -->
+    <div id="schedule-modal" class="schedule-modal-overlay" style="display: none;">
+        <div class="schedule-modal-card">
+            <div class="schedule-modal-header">
+                <div>
+                    <h3>Quản lý thời gian biểu</h3>
+                    <p class="sched-modal-desc">Thêm và quản lý các mốc hoạt động cố định trong ngày</p>
+                </div>
+                <button class="close-modal-btn" id="close-schedule-modal" title="Đóng cửa sổ">&times;</button>
+            </div>
+            <div class="schedule-modal-body">
+                <form id="add-schedule-form" class="schedule-add-form">
+                    <div class="sched-form-fields-grid">
+                        <div class="sched-field-block">
+                            <label for="sched-time" class="sched-label">
+                                <span>Khung thời gian</span>
+                                <span class="sched-label-hint">Ví dụ: 08:00 - 10:30 hoặc 19:00</span>
+                            </label>
+                            <input type="text" id="sched-time" class="sched-input" placeholder="08:00 - 10:30 (hoặc Cả ngày)" required autocomplete="off">
+                            <input type="hidden" id="sched-emoji" value="🎯">
+                            <div class="sched-preset-pills">
+                                <span class="preset-pill-label">Gợi ý nhanh:</span>
+                                <button type="button" class="sched-preset-pill" data-time="06:00 - 07:30">06:00 - 07:30</button>
+                                <button type="button" class="sched-preset-pill" data-time="08:00 - 11:30">08:00 - 11:30</button>
+                                <button type="button" class="sched-preset-pill" data-time="13:30 - 17:00">13:30 - 17:00</button>
+                                <button type="button" class="sched-preset-pill" data-time="19:30 - 22:00">19:30 - 22:00</button>
+                            </div>
+                        </div>
+
+                        <div class="sched-field-block">
+                            <label for="sched-activity" class="sched-label">
+                                <span>Tên hoạt động / Nhiệm vụ</span>
+                                <span class="sched-label-hint">Nội dung thực hiện</span>
+                            </label>
+                            <input type="text" id="sched-activity" class="sched-input" placeholder="Ví dụ: Học Deep Learning Coursera, Chạy bộ 5km, Đọc sách..." required autocomplete="off">
+                        </div>
+
+                        <div class="sched-submit-bar">
+                            <button type="submit" class="btn btn-primary sched-btn-add" id="sched-add-btn">
+                                + Thêm vào thời gian biểu
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Quick Import Section -->
+                <div class="schedule-import-section">
+                    <div class="import-title">Hoặc nhập nhanh từ File (Excel, CSV, PDF, Ảnh)</div>
+                    <div class="import-controls">
+                        <label for="schedule-file-input" class="btn btn-secondary btn-sm" id="import-file-label" style="margin: 0; cursor: pointer; border-color: rgba(139, 92, 246, 0.3); padding: 0.4rem 0.85rem;">
+                            Chọn File (xlsx, csv, pdf, png, jpg)
+                        </label>
+                        <input type="file" id="schedule-file-input" accept=".xlsx,.xls,.csv,.txt,.pdf,image/*" style="display: none;">
+                        <span class="import-status-text" id="import-status-text">Chưa chọn file</span>
+                    </div>
+                </div>
+
+                <div class="sched-list-section-header">
+                    <h4>Các mốc thời gian trong ngày</h4>
+                    <span class="sched-count-badge" id="sched-count-badge">0 hoạt động</span>
+                </div>
+                <ul class="schedule-edit-list" id="schedule-edit-list">
+                    <!-- Rendered dynamically by JavaScript -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Habit Coach Chatbot -->
+    <div class="chatbot-wrapper">
+        <!-- Floating Toggle Button -->
+        <button class="chatbot-trigger" id="chatbot-trigger" aria-label="Open AI Assistant">
+            <span class="chatbot-icon">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            </span>
+            <span class="chatbot-pulse"></span>
+        </button>
+
+        <!-- Chat Window Panel -->
+        <div class="chatbot-panel" id="chatbot-panel">
+            <div class="chatbot-header">
+                <div class="chatbot-header-info">
+                    <div style="width: 32px; height: 32px; background: var(--accent-primary); border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    </div>
+                    <div>
+                        <h4>AI Coach</h4>
+                        <span class="chatbot-status">Đang hoạt động (Online)</span>
+                    </div>
+                </div>
+                <div class="chatbot-header-actions">
+                    <button class="chatbot-close-btn" id="chatbot-close-btn">&times;</button>
+                </div>
+            </div>
+
+            <!-- Chat Messages Body -->
+            <div class="chatbot-messages" id="chatbot-messages">
+                <div class="chat-message coach">
+                    Chào bạn! Tôi là trợ lý AI Habit & Schedule Coach. Bạn có thể gửi hoặc dán thời khóa biểu vào đây, tôi sẽ tự động sắp xếp vào Thời gian biểu và lên danh sách Việc cần làm (TODO List) hôm nay cho bạn!
+                </div>
+            </div>
+
+            <!-- Chat Action Suggestions Chips -->
+            <div class="chatbot-chips">
+                <button class="chip-btn" data-prompt="Gợi ý bài học AI">Gợi ý bài học AI</button>
+                <button class="chip-btn" data-prompt="Xếp lịch & Lên TODO từ TKB">Xếp lịch & Lên TODO</button>
+                <button class="chip-btn" data-prompt="Phân tích tiến độ">Phân tích tiến độ</button>
+                <button class="chip-btn" data-prompt="Lời khuyên giấc ngủ">Lời khuyên giấc ngủ</button>
+                <button class="chip-btn" data-prompt="Phân tích thời gian biểu">Thời gian biểu</button>
+                <button class="chip-btn" data-prompt="Động lực hôm nay">Động lực hôm nay</button>
+            </div>
+
+            <!-- Chat Input Footer -->
+            <form id="chatbot-input-form" class="chatbot-footer">
+                <label for="chatbot-file-input" class="chatbot-attach-btn" id="chatbot-attach-label" title="Gửi file hoặc ảnh thời khóa biểu">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                </label>
+                <input type="file" id="chatbot-file-input" accept=".xlsx,.xls,.csv,.txt,.pdf,image/*" style="display: none;">
+                <input type="text" id="chatbot-input" placeholder="Gửi thời khóa biểu hoặc hỏi AI..." autocomplete="off">
+                <button type="submit" class="chatbot-send-btn" id="chatbot-send-btn" aria-label="Gửi tin nhắn">
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Excel Schedule Preview & Confirmation Modal -->
+    <div id="excel-preview-modal" class="schedule-modal-overlay" style="display: none;">
+        <div class="schedule-modal-card excel-modal-card">
+            <div class="schedule-modal-header">
+                <div>
+                    <h3>Xem trước Thời khóa biểu từ Excel</h3>
+                    <p class="excel-modal-subtitle" id="excel-modal-subtitle">Tìm thấy 0 hoạt động học tập</p>
+                </div>
+                <button class="close-modal-btn" id="close-excel-modal">&times;</button>
+            </div>
+            <div class="excel-preview-controls">
+                <div class="excel-filter-btns">
+                    <button type="button" class="btn btn-secondary btn-xs active" id="excel-filter-today">Chỉ hôm nay</button>
+                    <button type="button" class="btn btn-secondary btn-xs" id="excel-filter-all">Toàn bộ tuần</button>
+                    <button type="button" class="btn btn-secondary btn-xs" id="excel-select-all">Chọn tất cả</button>
+                    <button type="button" class="btn btn-secondary btn-xs" id="excel-deselect-all">Bỏ chọn</button>
+                </div>
+                <div class="excel-mode-toggle">
+                    <label>
+                        <input type="radio" name="excel-import-mode" value="append" checked> Thêm tiếp
+                    </label>
+                    <label>
+                        <input type="radio" name="excel-import-mode" value="replace"> Ghi đè lịch cũ
+                    </label>
+                </div>
+            </div>
+            <div class="excel-preview-table-container">
+                <table class="excel-preview-table">
+                    <thead>
+                        <tr>
+                            <th width="40"><input type="checkbox" id="excel-th-chk" checked></th>
+                            <th width="100">Thứ / Ngày</th>
+                            <th width="140">Thời gian</th>
+                            <th>Môn học / Hoạt động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="excel-preview-tbody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="excel-modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancel-excel-btn">Hủy bỏ</button>
+                <button type="button" class="btn btn-primary" id="confirm-excel-btn">Xác nhận nạp vào Lịch trình</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strict Study Session & Attendance Modal -->
+    <div id="study-session-modal" class="schedule-modal-overlay" style="display: none;">
+        <div class="schedule-modal-card study-modal-card">
+            <div class="schedule-modal-header">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                        <span class="study-phase-badge" id="study-modal-phase">Chặng 1</span>
+                        <span class="study-module-badge" id="study-modal-module">Control Systems Lectures</span>
+                    </div>
+                    <h3 id="study-modal-title" style="margin: 0; font-size: 1.25rem;">PID Control</h3>
+                </div>
+                <button class="close-modal-btn" id="close-study-modal">&times;</button>
+            </div>
+            
+            <div class="study-modal-body">
+                <!-- Top: Video Link / Embedded Preview -->
+                <div class="study-resource-box">
+                    <div class="study-resource-header">
+                        <span class="study-resource-tag">TÀI LIỆU BÀI GIẢNG</span>
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-xs study-open-link-btn" id="study-modal-extlink">
+                            Mở video YouTube bài giảng
+                        </a>
+                    </div>
+                    <div class="study-video-embed" id="study-video-embed">
+                        <!-- Embedded YouTube Iframe or Resource Card -->
+                    </div>
+                </div>
+
+                <!-- Middle: Strict Lesson Focus Timer -->
+                <div class="study-timer-section">
+                    <div class="study-timer-header">
+                        <span class="study-timer-title">TIẾT HỌC KỶ LUẬT (ĐIỀU KIỆN ĐIỂM DANH)</span>
+                        <div class="study-duration-selects">
+                            <button type="button" class="btn btn-secondary btn-xs study-dur-btn" data-mins="15">15p (Thử nghiệm)</button>
+                            <button type="button" class="btn btn-secondary btn-xs study-dur-btn active" data-mins="25">25p (Chuẩn)</button>
+                            <button type="button" class="btn btn-secondary btn-xs study-dur-btn" data-mins="45">45p (Đại học)</button>
+                        </div>
+                    </div>
+                    <div class="study-countdown-box">
+                        <div class="study-countdown-num" id="study-countdown-display">25:00</div>
+                        <div class="study-timer-controls">
+                            <button type="button" class="btn btn-primary btn-sm" id="study-timer-start-btn">Bắt đầu tiết học</button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="study-timer-reset-btn">Đặt lại</button>
+                        </div>
+                    </div>
+                    <div class="study-timer-subtext" id="study-timer-status-text">Bấm bắt đầu và tập trung học video bài giảng. Không mở mạng xã hội gây sao nhãng!</div>
+                </div>
+
+                <!-- Bottom: Learning Log & Summary Proof -->
+                <div class="study-notes-section">
+                    <label for="study-session-notes" class="study-notes-label">
+                        Báo Cáo Thu Hoạch Bài Học (Bắt buộc ít nhất 1 câu tóm tắt kiến thức đã tiếp thu):
+                    </label>
+                    <textarea id="study-session-notes" class="study-notes-textarea" placeholder="Ví dụ: Nắm được cấu trúc bộ điều khiển PID gồm tỷ lệ P, tích phân I để triệt tiêu sai số và vi phân D để giảm độ vọt lố..."></textarea>
+                </div>
+            </div>
+
+            <div class="study-modal-footer">
+                <div class="study-stamp-info" id="study-stamp-info">
+                    Tiết học cần đếm ngược hoàn tất hoặc ghi nhận ít nhất để đóng dấu điểm danh hợp lệ.
+                </div>
+                <div class="study-modal-btns">
+                    <button type="button" class="btn btn-secondary" id="close-study-modal-btn">Rời phòng</button>
+                    <button type="button" class="btn btn-primary" id="confirm-attendance-btn">
+                        ĐÓNG DẤU ĐIỂM DANH TIẾT HỌC
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Lesson / Excel Import Modal for Classroom -->
+    <div id="classroom-add-modal" class="schedule-modal-overlay" style="display: none;">
+        <div class="schedule-modal-card">
+            <div class="schedule-modal-header">
+                <div>
+                    <h3>Quản lý Bài Học & Lộ Trình</h3>
+                    <p class="excel-modal-subtitle">Thêm bài học mới hoặc nạp từ file Excel</p>
+                </div>
+                <button class="close-modal-btn" id="close-add-lesson-modal">&times;</button>
+            </div>
+            <div class="schedule-modal-body">
+                <form id="add-lesson-form" class="schedule-add-form" style="display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label for="lesson-phase-select" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Chặng học tập</label>
+                        <select id="lesson-phase-select" class="month-select" style="width: 100%;">
+                            <option value="Chặng 1">Chặng 1 (3 tuần)</option>
+                            <option value="Chặng 2">Chặng 2 (3 tuần)</option>
+                            <option value="Chặng 3">Chặng 3 (3 tuần)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="lesson-module-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Chủ đề / Tên Module</label>
+                        <input type="text" id="lesson-module-input" placeholder="Ví dụ: Control Systems Lectures, Observability..." style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lesson-title-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Tên bài học</label>
+                        <input type="text" id="lesson-title-input" placeholder="Ví dụ: PID Control, Transfer Functions..." style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lesson-url-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Đường dẫn Video YouTube / Tài liệu</label>
+                        <input type="url" id="lesson-url-input" placeholder="https://www.youtube.com/watch?v=..." style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">+ Thêm Vào Bảng Lộ Trình</button>
+                </form>
+
+                <!-- Bulk Excel Import Section -->
+                <div class="schedule-import-section">
+                    <div class="import-title">Nạp Lộ Trình Từ File Excel (.xlsx)</div>
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                        Tải lên file Excel có cấu trúc các cột: Chặng, Module, Tên bài học, Link tài liệu để tự động tạo lộ trình.
+                    </p>
+                    <div class="import-controls">
+                        <label for="classroom-excel-input" class="btn btn-secondary btn-sm" style="margin: 0; cursor: pointer; border-color: rgba(16, 185, 129, 0.4); padding: 0.45rem 0.95rem;">
+                            Chọn File Excel Lộ Trình
+                        </label>
+                        <input type="file" id="classroom-excel-input" accept=".xlsx,.xls,.csv" style="display: none;">
+                        <span class="import-status-text" id="classroom-excel-status">Chưa chọn file</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Course Modal for Coursera Mini -->
+    <div id="add-course-modal" class="schedule-modal-overlay" style="display: none;">
+        <div class="schedule-modal-card">
+            <div class="schedule-modal-header">
+                <div>
+                    <h3>Tạo Khóa Học Mới</h3>
+                    <p class="excel-modal-subtitle">Thiết lập khóa học tự đào tạo chuẩn Coursera</p>
+                </div>
+                <button class="close-modal-btn" id="close-add-course-modal">&times;</button>
+            </div>
+            <div class="schedule-modal-body">
+                <form id="add-course-form" class="schedule-add-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                    <div class="form-group">
+                        <label for="course-title-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Tên khóa học</label>
+                        <input type="text" id="course-title-input" placeholder="Ví dụ: Lập trình Vi điều khiển STM32 & RTOS..." style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="course-category-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Lĩnh vực / Chuyên ngành</label>
+                        <input type="text" id="course-category-input" placeholder="Ví dụ: Hệ thống Nhúng & IoT" style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="course-desc-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Mô tả mục tiêu khóa học</label>
+                        <textarea id="course-desc-input" placeholder="Mục tiêu nắm vững kiến thức, điểm danh và hoàn thành bài tập..." rows="2" style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);"></textarea>
+                    </div>
+                    <div class="form-row" style="display: flex; gap: 0.75rem;">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="course-emoji-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Biểu tượng Icon</label>
+                            <input type="text" id="course-emoji-input" placeholder="⚡" value="⚡" style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="course-duration-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Thời lượng dự kiến (tuần)</label>
+                            <input type="number" id="course-duration-input" min="1" max="52" value="6" style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 0.5rem;">+ Tạo Khóa Học Ngay</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Resource Modal for Coursera Mini -->
+    <div id="add-resource-modal" class="schedule-modal-overlay" style="display: none;">
+        <div class="schedule-modal-card">
+            <div class="schedule-modal-header">
+                <div>
+                    <h3>Thêm Tài Liệu / Slide Khóa Học</h3>
+                    <p class="excel-modal-subtitle">Bổ sung sách, slide, code bài tập hoặc cheatsheet</p>
+                </div>
+                <button class="close-modal-btn" id="close-add-resource-modal">&times;</button>
+            </div>
+            <div class="schedule-modal-body">
+                <form id="add-resource-form" class="schedule-add-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                    <div class="form-group">
+                        <label for="res-title-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Tên tài liệu / Tiêu đề</label>
+                        <input type="text" id="res-title-input" placeholder="Ví dụ: Giáo trình Hệ thống điều khiển số - PDF" style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="res-type-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Phân loại tài liệu</label>
+                        <select id="res-type-input" class="month-select" style="width: 100%;">
+                            <option value="PDF / Sách">PDF / Sách giáo trình</option>
+                            <option value="Slide bài giảng">Slide bài giảng</option>
+                            <option value="Source Code / Lab">Source Code / Lab thực hành</option>
+                            <option value="Cheat Sheet">Cheat Sheet / Bảng công thức</option>
+                            <option value="Video / Playlist">Video / Playlist mở rộng</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="res-url-input" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Đường dẫn URL tài liệu (Google Drive / GitHub / Web)</label>
+                        <input type="url" id="res-url-input" placeholder="https://..." style="width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary);" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 0.5rem;">+ Thêm Vào Kho Tài Liệu</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Profile Modal -->
+    <div id="edit-profile-modal" class="schedule-modal-overlay" style="display: none;">
+        <div class="schedule-modal-card" style="max-width: 520px;">
+            <div class="schedule-modal-header">
+                <div>
+                    <h3>Chỉnh Sửa Hồ Sơ Cá Nhân</h3>
+                    <p class="excel-modal-subtitle">Cá nhân hóa danh tính và mục tiêu kỷ luật của bạn</p>
+                </div>
+                <button class="close-modal-btn" id="close-edit-profile-modal">&times;</button>
+            </div>
+            <div class="schedule-modal-body">
+                <form id="edit-profile-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="profile-input-name" style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.35rem; display: block;">Họ và Tên</label>
+                        <input type="text" id="profile-input-name" placeholder="Nguyễn Tuấn Kiệt" style="width: 100%; padding: 0.6rem 0.85rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-family: var(--font-body); font-weight: 600;" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profile-input-headline" style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.35rem; display: block;">Chức danh / Định hướng kỷ luật (Headline)</label>
+                        <input type="text" id="profile-input-headline" placeholder="Executive Discipline & Continuous Learning" style="width: 100%; padding: 0.6rem 0.85rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-family: var(--font-body);">
+                    </div>
+
+                    <div class="form-row" style="display: flex; gap: 0.85rem;">
+                        <div class="form-group" style="width: 110px;">
+                            <label for="profile-input-avatar-letters" style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.35rem; display: block;">Chữ viết tắt</label>
+                            <input type="text" id="profile-input-avatar-letters" maxlength="3" placeholder="TK" style="width: 100%; text-transform: uppercase; text-align: center; padding: 0.6rem 0.5rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-weight: 800;">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="profile-input-avatar-url" style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.35rem; display: block;">Link ảnh đại diện (Tùy chọn URL)</label>
+                            <input type="url" id="profile-input-avatar-url" placeholder="https://... hoặc để trống để dùng chữ viết tắt" style="width: 100%; padding: 0.6rem 0.85rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-family: var(--font-body);">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profile-input-bio" style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.35rem; display: block;">Châm ngôn / Mục tiêu cá nhân</label>
+                        <textarea id="profile-input-bio" rows="2" placeholder="Kỷ luật là cầu nối giữa mục tiêu và thành tựu." style="width: 100%; padding: 0.6rem 0.85rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-family: var(--font-body); resize: vertical;"></textarea>
+                    </div>
+
+                    <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                        <button type="button" class="btn btn-secondary" id="cancel-edit-profile-btn">Hủy</button>
+                        <button type="submit" class="btn btn-primary" id="save-edit-profile-btn">Lưu Thay Đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classroom Absence Alert Banner -->
+    <div id="classroom-absence-banner" class="classroom-absence-banner" style="display: none;"></div>
+
+    <!-- Overdue Alert Banner Container -->
+    <div id="inapp-overdue-banner" class="inapp-overdue-banner"></div>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toast">Thông báo hiển thị ở đây</div>
+
+    <!-- External Libraries for Schedule Import & Celebrations -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script src="app.js?v=8"></script>
+</body>
+</html>
