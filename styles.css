@@ -2135,11 +2135,13 @@ body.light-theme .today-col {
     box-shadow: 0 10px 25px rgba(0, 123, 255, 0.4);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
     position: relative;
+    color: #ffffff;
 }
 
 .chatbot-trigger:hover {
     transform: scale(1.08) rotate(5deg);
     box-shadow: 0 12px 30px rgba(0, 123, 255, 0.5);
+    color: #ffffff;
 }
 
 .chatbot-trigger:active {
@@ -2149,6 +2151,10 @@ body.light-theme .today-col {
 .chatbot-icon {
     font-size: 1.6rem;
     line-height: 1;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .chatbot-pulse {
@@ -5775,10 +5781,71 @@ body.light-theme .quick-ai-card {
     font-size: 0.8rem;
 }
 
-/* Bỏ các icon trông AI: ẩn hoàn toàn floating widget AI button */
-.chatbot-wrapper,
-.chatbot-trigger {
-    display: none !important;
+/* Nav & Rail Logout Buttons */
+.nav-logout-btn {
+    border-color: rgba(239, 68, 68, 0.35) !important;
+    color: #f87171 !important;
+}
+
+.nav-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border-color: #ef4444 !important;
+    color: #fca5a5 !important;
+}
+
+body.light-theme .nav-logout-btn {
+    border-color: rgba(220, 38, 38, 0.4) !important;
+    color: #dc2626 !important;
+}
+
+body.light-theme .nav-logout-btn:hover {
+    background: #fef2f2 !important;
+    border-color: #dc2626 !important;
+    color: #b91c1c !important;
+}
+
+.logout-action-btn {
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    background: transparent;
+    color: #f87171;
+    width: 100%;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.76rem;
+    font-weight: 700;
+    border-radius: var(--border-radius-pill, 24px);
+    padding: 0.38rem 0.75rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.logout-action-btn:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #ef4444;
+    color: #fca5a5;
+}
+
+body.light-theme .logout-action-btn {
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #dc2626;
+}
+
+body.light-theme .logout-action-btn:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #b91c1c;
+}
+
+.profile-link-btn.highlight-coach-link {
+    color: var(--coursera-blue, #0056d2);
+    font-weight: 800;
+}
+
+.profile-link-btn.highlight-coach-link:hover {
+    background: rgba(0, 86, 210, 0.12);
 }
 
 /* Mobile Bottom Navigation Dock (Desktop Hidden) */

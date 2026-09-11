@@ -562,13 +562,9 @@ function setupAuthUI() {
         tabSignup.style.pointerEvents = 'none';
         
         useOfflineBtn.addEventListener('click', () => {
-            authOverlay.style.display = 'none';
             isOfflineMode = true;
             localStorage.setItem('bro_habit_tracker_offline_mode', 'true');
-            const userProfile = document.getElementById('user-profile');
-            const userEmailDisplay = document.getElementById('user-email-display');
-            if (userProfile) userProfile.style.display = 'flex';
-            if (userEmailDisplay) userEmailDisplay.innerText = 'Chế độ Offline';
+            syncAuthUI(true, 'Chế độ Offline');
             initOfflineState();
         });
         
@@ -585,13 +581,9 @@ function setupAuthUI() {
     });
     
     useOfflineBtn.addEventListener('click', () => {
-        authOverlay.style.display = 'none';
         isOfflineMode = true;
         localStorage.setItem('bro_habit_tracker_offline_mode', 'true');
-        const userProfile = document.getElementById('user-profile');
-        const userEmailDisplay = document.getElementById('user-email-display');
-        if (userProfile) userProfile.style.display = 'flex';
-        if (userEmailDisplay) userEmailDisplay.innerText = 'Chế độ Offline';
+        syncAuthUI(true, 'Chế độ Offline');
         initOfflineState();
     });
     
@@ -633,23 +625,55 @@ function switchAuthTab(tab) {
     });
 }
 
-async function checkSessionAndInit() {
+// Đồng bộ hiển thị Auth, Header và Logout buttons
+function syncAuthUI(isAuthenticatedOrOffline, userLabel = '') {
     const authOverlay = document.getElementById('auth-overlay');
     const userProfile = document.getElementById('user-profile');
     const userEmailDisplay = document.getElementById('user-email-display');
+    const headerLogoutBtn = document.getElementById('header-logout-btn');
+    const railLogoutBtn = document.getElementById('rail-logout-btn');
     const logoutBtn = document.getElementById('logout-btn');
-    
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
+
+    if (isAuthenticatedOrOffline) {
+        if (authOverlay) authOverlay.style.display = 'none';
+        if (userProfile) userProfile.style.display = 'flex';
+        if (headerLogoutBtn) headerLogoutBtn.style.display = 'inline-flex';
+        if (railLogoutBtn) railLogoutBtn.style.display = 'inline-flex';
+        if (logoutBtn) logoutBtn.style.display = 'none'; // Đã có nút Đăng xuất trên header và rail
+        if (userEmailDisplay && userLabel) userEmailDisplay.innerText = userLabel;
+    } else {
+        if (authOverlay) authOverlay.style.display = 'flex';
+        if (userProfile) userProfile.style.display = 'none';
+        if (headerLogoutBtn) headerLogoutBtn.style.display = 'none';
+        if (railLogoutBtn) railLogoutBtn.style.display = 'none';
     }
-    
+}
+
+function setupLogoutListeners() {
+    const headerLogoutBtn = document.getElementById('header-logout-btn');
+    const railLogoutBtn = document.getElementById('rail-logout-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    [headerLogoutBtn, railLogoutBtn, logoutBtn].forEach(btn => {
+        if (btn && !btn.dataset.boundLogout) {
+            btn.dataset.boundLogout = "true";
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleLogout();
+            });
+        }
+    });
+}
+
+async function checkSessionAndInit() {
+    setupLogoutListeners();
+
     // Check if the user previously selected Offline Mode
     const savedOfflineMode = localStorage.getItem('bro_habit_tracker_offline_mode') === 'true';
     if (savedOfflineMode) {
         isOfflineMode = true;
-        if (authOverlay) authOverlay.style.display = 'none';
-        if (userProfile) userProfile.style.display = 'flex';
-        if (userEmailDisplay) userEmailDisplay.innerText = 'Chế độ Offline';
+        syncAuthUI(true, 'Chế độ Offline');
         initOfflineState();
         return;
     }
@@ -659,21 +683,16 @@ async function checkSessionAndInit() {
         
         if (session && session.user) {
             currentUser = session.user;
-            if (authOverlay) authOverlay.style.display = 'none';
-            if (userProfile) userProfile.style.display = 'flex';
-            if (userEmailDisplay) userEmailDisplay.innerText = currentUser.email;
+            syncAuthUI(true, currentUser.email);
             await loadStateFromCloud();
         } else {
-            if (authOverlay) authOverlay.style.display = 'flex';
-            if (userProfile) userProfile.style.display = 'none';
+            syncAuthUI(false);
         }
     } catch (e) {
         console.error("Lỗi lấy session:", e);
         // Fallback to offline mode
         isOfflineMode = true;
-        if (authOverlay) authOverlay.style.display = 'none';
-        if (userProfile) userProfile.style.display = 'flex';
-        if (userEmailDisplay) userEmailDisplay.innerText = 'Chế độ Offline';
+        syncAuthUI(true, 'Chế độ Offline');
         initOfflineState();
     }
     
@@ -685,14 +704,11 @@ async function checkSessionAndInit() {
             
             if (session && session.user) {
                 currentUser = session.user;
-                if (authOverlay) authOverlay.style.display = 'none';
-                if (userProfile) userProfile.style.display = 'flex';
-                if (userEmailDisplay) userEmailDisplay.innerText = currentUser.email;
+                syncAuthUI(true, currentUser.email);
                 await loadStateFromCloud();
             } else {
                 currentUser = null;
-                if (authOverlay) authOverlay.style.display = 'flex';
-                if (userProfile) userProfile.style.display = 'none';
+                syncAuthUI(false);
             }
         });
     }
@@ -754,7 +770,7 @@ async function handleAuthSubmit(e) {
 }
 
 async function handleLogout() {
-    if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
+    if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
         localStorage.removeItem('bro_habit_tracker_offline_mode');
         if (supabaseClient && currentUser) {
             try {
@@ -765,10 +781,11 @@ async function handleLogout() {
         }
         currentUser = null;
         isOfflineMode = false;
-        showToast("Đã đăng xuất.");
+        showToast("Đã đăng xuất thành công.");
         window.location.reload();
     }
 }
+window.handleLogout = handleLogout;
 
 // Tải trạng thái từ Supabase
 async function loadStateFromCloud() {
