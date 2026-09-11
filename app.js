@@ -734,12 +734,18 @@ async function handleAuthSubmit(e) {
         }
     } catch (err) {
         console.error(err);
-        showToast(err.message, true);
+        let userFriendlyMsg = err.message || 'Lỗi không xác định';
+        if (userFriendlyMsg.includes('504') || userFriendlyMsg.toLowerCase().includes('timeout')) {
+            userFriendlyMsg = 'Máy chủ Supabase đang tạm dừng / timeout (HTTP 504). Vui lòng bấm nút "Sử dụng Offline (Lưu cục bộ)" bên dưới để vào ứng dụng ngay mà không cần tài khoản!';
+        } else if (userFriendlyMsg.includes('Failed to fetch') || userFriendlyMsg.toLowerCase().includes('network')) {
+            userFriendlyMsg = 'Không thể kết nối đến máy chủ Supabase. Vui lòng bấm "Sử dụng Offline" bên dưới để vào ứng dụng.';
+        }
+        showToast(userFriendlyMsg, true);
         
         // Show inline error in overlay
         if (errorMsg) {
             errorMsg.style.display = 'block';
-            errorMsg.innerText = "Lỗi: " + err.message;
+            errorMsg.innerText = userFriendlyMsg;
         }
     } finally {
         submitBtn.disabled = false;
