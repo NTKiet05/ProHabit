@@ -14,5 +14,9 @@
     "desktop"
   ],
   "author": "Nguyen Tuan Kiet",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^44.3.0"
+  }
 }
