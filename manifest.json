@@ -1,16 +1,25 @@
 {
-  "short_name": "Bro Tracker",
-  "name": "Bro Habit Tracker Dashboard",
+  "short_name": "ProHabit",
+  "name": "ProHabit - Executive Discipline Platform",
+  "description": "Nền tảng quản lý kỷ luật và học tập chuyên sâu chuẩn điều hành",
   "icons": [
     {
-      "src": "icon-192.jpg",
-      "type": "image/jpeg",
-      "sizes": "192x192"
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any"
     },
     {
-      "src": "icon-512.jpg",
-      "type": "image/jpeg",
-      "sizes": "512x512"
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "./index.html",

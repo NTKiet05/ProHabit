@@ -253,12 +253,13 @@ const DEFAULT_CLASSROOM = {
 
 // Default User Profile
 const DEFAULT_PROFILE = {
-    name: 'Nguyễn Tuấn Kiệt',
+    name: '',
     headline: 'Executive Discipline & Continuous Learning',
-    avatarText: 'TK',
+    avatarText: 'PH',
     avatarUrl: '',
     bio: 'Kỷ luật là cầu nối giữa mục tiêu và thành tựu.',
-    statusTier: 'Hội viên Pro'
+    statusTier: 'Thành viên mới',
+    hasSetupProfile: false
 };
 
 // State
@@ -336,6 +337,8 @@ function init() {
     renderProfile();
     setupProfileModal();
     setupWorkspaceExpansion();
+    setupOnboardingModal();
+    setupNetworkStatusIndicator();
 }
 
 // Đăng ký Service Worker cho PWA (Hỗ trợ chạy Offline và Cài đặt như App di động)
@@ -356,7 +359,7 @@ function renderProfile() {
     
     // Left Rail profile card
     const nameEl = document.getElementById('profile-user-name');
-    if (nameEl) nameEl.innerText = p.name || 'Nguyễn Tuấn Kiệt';
+    if (nameEl) nameEl.innerText = p.name || 'Thành viên Kỷ Luật';
     
     const headlineEl = document.getElementById('profile-user-headline');
     if (headlineEl) headlineEl.innerText = p.headline || 'Executive Discipline & Continuous Learning';
@@ -365,12 +368,12 @@ function renderProfile() {
     if (avatarLarge) {
         if (p.avatarUrl && p.avatarUrl.trim() !== '') {
             avatarLarge.innerHTML = `
-                <img src="${escapeHtml(p.avatarUrl)}" class="profile-avatar-img" alt="${escapeHtml(p.name)}">
+                <img src="${escapeHtml(p.avatarUrl)}" class="profile-avatar-img" alt="${escapeHtml(p.name || 'Thành viên')}">
                 <span class="avatar-online-dot"></span>
             `;
         } else {
             avatarLarge.innerHTML = `
-                <span class="avatar-letters" id="profile-avatar-letters">${escapeHtml(p.avatarText || 'TK')}</span>
+                <span class="avatar-letters" id="profile-avatar-letters">${escapeHtml(p.avatarText || 'PH')}</span>
                 <span class="avatar-online-dot"></span>
             `;
         }
@@ -378,7 +381,7 @@ function renderProfile() {
     
     // Top global header
     const headerAvatar = document.getElementById('header-avatar-letters');
-    if (headerAvatar) headerAvatar.innerText = p.avatarText || 'TK';
+    if (headerAvatar) headerAvatar.innerText = p.avatarText || 'PH';
     
     const headerEmail = document.getElementById('user-email-display');
     if (headerEmail) headerEmail.innerText = p.name || 'Kỷ Luật & Học Tập';
@@ -447,7 +450,7 @@ function setupProfileModal() {
     
     form?.addEventListener('submit', (e) => {
         e.preventDefault();
-        const newName = nameInp.value.trim() || 'Nguyễn Tuấn Kiệt';
+        const newName = nameInp.value.trim() || 'Thành viên Kỷ Luật';
         const newHead = headInp.value.trim() || 'Executive Discipline & Continuous Learning';
         let newLetters = avLettersInp.value.trim().toUpperCase();
         if (!newLetters) {
@@ -458,12 +461,14 @@ function setupProfileModal() {
         const newBio = bioInp.value.trim();
         
         state.profile = {
+            ...state.profile,
             name: newName,
             headline: newHead,
             avatarText: newLetters,
             avatarUrl: newUrl,
             bio: newBio,
-            statusTier: state.profile.statusTier || 'Hội viên Pro'
+            statusTier: state.profile.statusTier || 'Hội viên Pro',
+            hasSetupProfile: true
         };
         
         saveState();
@@ -471,6 +476,176 @@ function setupProfileModal() {
         closeModal();
         showToast('Đã lưu thông tin hồ sơ cá nhân thành công!');
     });
+}
+
+// ==========================================================================
+// PERSONALIZED ONBOARDING EXPERIENCE FOR NEW USERS
+// ==========================================================================
+function setupOnboardingModal() {
+    const modal = document.getElementById('onboarding-modal');
+    if (!modal) return;
+
+    const form = document.getElementById('onboarding-form');
+    const nameInput = document.getElementById('onboarding-name');
+    const headlineInput = document.getElementById('onboarding-headline');
+    const mottoInput = document.getElementById('onboarding-motto');
+    const avatarTextPreview = document.getElementById('onboarding-avatar-text');
+    const randomMottoBtn = document.getElementById('random-motto-btn');
+    const chipsContainer = document.getElementById('onboarding-headline-chips');
+
+    // Helper: calculate initials from full name
+    function getInitials(name) {
+        if (!name || !name.trim()) return 'PH';
+        const parts = name.trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 1) {
+            return parts[0].substring(0, 2).toUpperCase();
+        }
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    // Real-time live avatar preview update as user types name
+    if (nameInput) {
+        nameInput.addEventListener('input', () => {
+            const val = nameInput.value;
+            if (avatarTextPreview) {
+                avatarTextPreview.innerText = getInitials(val);
+            }
+        });
+    }
+
+    // Headline chips quick selection
+    if (chipsContainer) {
+        const chips = chipsContainer.querySelectorAll('.onboarding-chip');
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                chips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                if (headlineInput) {
+                    headlineInput.value = chip.dataset.val || chip.innerText.trim();
+                }
+            });
+        });
+    }
+
+    // Headline input clears chip active state if custom typed
+    if (headlineInput) {
+        headlineInput.addEventListener('input', () => {
+            const currentVal = headlineInput.value.trim();
+            const chips = chipsContainer ? chipsContainer.querySelectorAll('.onboarding-chip') : [];
+            chips.forEach(c => {
+                if (c.dataset.val === currentVal) {
+                    c.classList.add('active');
+                } else {
+                    c.classList.remove('active');
+                }
+            });
+        });
+    }
+
+    // Random motto generator
+    if (randomMottoBtn && mottoInput) {
+        randomMottoBtn.addEventListener('click', () => {
+            const cleanQuotes = MOTIVATIONAL_QUOTES.map(q => q.replace(/[“”"]/g, '').trim());
+            const random = cleanQuotes[Math.floor(Math.random() * cleanQuotes.length)];
+            mottoInput.value = random;
+        });
+    }
+
+    // Onboarding form submission
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const chosenName = nameInput.value.trim();
+            if (!chosenName) {
+                nameInput.focus();
+                return;
+            }
+
+            const chosenHeadline = (headlineInput ? headlineInput.value.trim() : '') || 'Executive Discipline & Continuous Learning';
+            const chosenMotto = (mottoInput ? mottoInput.value.trim() : '') || 'Kỷ luật là cầu nối giữa mục tiêu và thành tựu.';
+            const initials = getInitials(chosenName);
+
+            state.profile = {
+                ...state.profile,
+                name: chosenName,
+                headline: chosenHeadline,
+                avatarText: initials,
+                bio: chosenMotto,
+                statusTier: 'Thành viên mới',
+                hasSetupProfile: true
+            };
+
+            saveState();
+            if (supabaseClient && currentUser && !isOfflineMode) {
+                syncStateToCloudDirect();
+            }
+
+            modal.style.display = 'none';
+            renderProfile();
+
+            // Fire celebratory confetti
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            showToast(`Chào mừng ${chosenName}! Không gian kỷ luật ProHabit đã sẵn sàng.`);
+        });
+    }
+}
+
+function checkAndTriggerOnboarding() {
+    if (!state.profile) state.profile = { ...DEFAULT_PROFILE };
+    // Trigger onboarding if user has not completed setup, has no name, or has legacy placeholder
+    const needsOnboarding = !state.profile.hasSetupProfile || !state.profile.name || state.profile.name === 'Nguyễn Tuấn Kiệt';
+    if (needsOnboarding) {
+        const modal = document.getElementById('onboarding-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+            const nameInput = document.getElementById('onboarding-name');
+            if (nameInput) {
+                nameInput.value = '';
+                const preview = document.getElementById('onboarding-avatar-text');
+                if (preview) preview.innerText = 'PH';
+                nameInput.focus();
+            }
+        }
+    }
+}
+
+function setupNetworkStatusIndicator() {
+    const badge = document.getElementById('network-status-badge');
+    const text = document.getElementById('network-status-text');
+    if (!badge) return;
+
+    function updateStatus() {
+        const isOnline = navigator.onLine;
+        if (isOnline) {
+            badge.classList.remove('offline');
+            badge.classList.add('online');
+            if (text) text.innerText = 'Trực tuyến';
+            badge.setAttribute('title', 'Đã kết nối Internet • Sẵn sàng đồng bộ');
+        } else {
+            badge.classList.remove('online');
+            badge.classList.add('offline');
+            if (text) text.innerText = 'Ngoại tuyến';
+            badge.setAttribute('title', 'Mất kết nối Internet • Đang lưu trữ cục bộ');
+        }
+    }
+
+    window.addEventListener('online', () => {
+        updateStatus();
+        showToast('Đã kết nối lại Internet!');
+    });
+    window.addEventListener('offline', () => {
+        updateStatus();
+        showToast('Đã chuyển sang chế độ Ngoại tuyến (Offline). Dữ liệu vẫn được lưu an toàn!', true);
+    });
+
+    updateStatus();
 }
 
 function setupWorkspaceExpansion() {
@@ -566,6 +741,7 @@ function setupAuthUI() {
             localStorage.setItem('bro_habit_tracker_offline_mode', 'true');
             syncAuthUI(true, 'Chế độ Offline');
             initOfflineState();
+            checkAndTriggerOnboarding();
         });
         
         authOverlay.style.display = 'flex';
@@ -585,6 +761,7 @@ function setupAuthUI() {
         localStorage.setItem('bro_habit_tracker_offline_mode', 'true');
         syncAuthUI(true, 'Chế độ Offline');
         initOfflineState();
+        checkAndTriggerOnboarding();
     });
     
     authForm.addEventListener('submit', handleAuthSubmit);
@@ -675,25 +852,32 @@ async function checkSessionAndInit() {
         isOfflineMode = true;
         syncAuthUI(true, 'Chế độ Offline');
         initOfflineState();
+        checkAndTriggerOnboarding();
         return;
     }
     
     try {
-        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        const sessionPromise = supabaseClient.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Supabase getSession timeout')), 3500)
+        );
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
         
         if (session && session.user) {
             currentUser = session.user;
             syncAuthUI(true, currentUser.email);
             await loadStateFromCloud();
+            checkAndTriggerOnboarding();
         } else {
             syncAuthUI(false);
         }
     } catch (e) {
-        console.error("Lỗi lấy session:", e);
+        console.warn("Lỗi lấy session hoặc timeout Supabase:", e);
         // Fallback to offline mode
         isOfflineMode = true;
         syncAuthUI(true, 'Chế độ Offline');
         initOfflineState();
+        checkAndTriggerOnboarding();
     }
     
     // Lắng nghe thay đổi trạng thái đăng nhập
@@ -706,6 +890,7 @@ async function checkSessionAndInit() {
                 currentUser = session.user;
                 syncAuthUI(true, currentUser.email);
                 await loadStateFromCloud();
+                checkAndTriggerOnboarding();
             } else {
                 currentUser = null;
                 syncAuthUI(false);
@@ -816,6 +1001,15 @@ async function loadStateFromCloud() {
             if (!state.todos) state.todos = [];
             if (!state.logs) state.logs = {};
             if (!state.classroom) state.classroom = JSON.parse(JSON.stringify(DEFAULT_CLASSROOM));
+            if (!state.profile) {
+                state.profile = { ...DEFAULT_PROFILE };
+            } else {
+                state.profile = Object.assign({}, DEFAULT_PROFILE, state.profile);
+                if (state.profile.name === 'Nguyễn Tuấn Kiệt' && !state.profile.hasSetupProfile) {
+                    state.profile.name = '';
+                    state.profile.avatarText = 'PH';
+                }
+            }
         } else {
             // Người dùng mới, tạo bản ghi ban đầu
             const today = new Date();
@@ -827,7 +1021,8 @@ async function loadStateFromCloud() {
                 schedule: [...DEFAULT_SCHEDULE],
                 todos: [],
                 logs: {},
-                classroom: JSON.parse(JSON.stringify(DEFAULT_CLASSROOM))
+                classroom: JSON.parse(JSON.stringify(DEFAULT_CLASSROOM)),
+                profile: { ...DEFAULT_PROFILE }
             };
             generateMockData();
             await syncStateToCloudDirect();
@@ -907,6 +1102,10 @@ function loadState() {
                 state.profile = { ...DEFAULT_PROFILE };
             } else {
                 state.profile = Object.assign({}, DEFAULT_PROFILE, state.profile);
+                if (state.profile.name === 'Nguyễn Tuấn Kiệt' && !state.profile.hasSetupProfile) {
+                    state.profile.name = '';
+                    state.profile.avatarText = 'PH';
+                }
             }
         } catch (e) {
             console.error('Lỗi load state:', e);
@@ -2265,6 +2464,9 @@ window.addEventListener('resize', () => {
                     const reader = new FileReader();
                     reader.onload = async function(evt) {
                         try {
+                            if (typeof pdfjsLib === 'undefined') {
+                                throw new Error('Thư viện PDF.js chưa được tải. Vui lòng kiểm tra kết nối mạng.');
+                            }
                             const typedarray = new Uint8Array(evt.target.result);
                             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
                             const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
@@ -3423,6 +3625,9 @@ function parsePDF(file) {
     const reader = new FileReader();
     reader.onload = async function(e) {
         try {
+            if (typeof pdfjsLib === 'undefined') {
+                throw new Error('Thư viện PDF.js chưa được tải xong. Vui lòng kiểm tra kết nối mạng và thử lại.');
+            }
             const typedarray = new Uint8Array(e.target.result);
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
             

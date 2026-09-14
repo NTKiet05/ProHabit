@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bro Habit Tracker - Level Up Your Life</title>
-    <meta name="description" content="Spreadsheet-style habit tracker dashboard. Track your daily progress, weekly stats, overall wellness, sleep, and mood in a premium dark mode dashboard.">
+    <title>ProHabit - Executive Discipline &amp; Continuous Learning Platform</title>
+    <meta name="description" content="ProHabit - Nền tảng quản lý kỷ luật và học tập chuyên sâu chuẩn điều hành LinkedIn &amp; Coursera. Theo dõi thói quen, điểm danh khóa học và xếp lịch trình cá nhân.">
+    <!-- Favicon & Touch Icons -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=9">
+    <link rel="stylesheet" href="styles.css?v=10">
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#030712">
@@ -79,14 +82,20 @@
                     Đăng xuất
                 </button>
 
+                <!-- Network Online / Offline Status Badge -->
+                <div class="network-status-badge online" id="network-status-badge" title="Trạng thái kết nối">
+                    <span class="status-indicator-dot"></span>
+                    <span class="status-indicator-text" id="network-status-text">Trực tuyến</span>
+                </div>
+
                 <div class="linkedin-user-badge" id="user-profile" style="cursor: pointer;" title="Bấm để chỉnh sửa hồ sơ">
                     <div class="user-avatar-circle" id="header-avatar-circle">
-                        <span class="user-avatar-letters" id="header-avatar-letters">TK</span>
+                        <span class="user-avatar-letters" id="header-avatar-letters">PH</span>
                         <span class="user-online-dot"></span>
                     </div>
                     <div class="user-info-text">
-                        <span class="user-name-title" id="user-email-display">Kỷ Luật & Học Tập</span>
-                        <span class="user-status-sub" id="header-user-status">Hội viên Pro</span>
+                        <span class="user-name-title" id="user-email-display">Thành viên Kỷ Luật</span>
+                        <span class="user-status-sub" id="header-user-status">Executive</span>
                     </div>
                     <button class="btn btn-secondary btn-xs" id="logout-btn" style="display:none;">Thoát</button>
                 </div>
@@ -137,12 +146,12 @@
                     <div class="profile-card-cover"></div>
                     <div class="profile-avatar-wrap">
                         <div class="profile-avatar-large" id="profile-avatar-large" style="cursor: pointer;" title="Bấm để chỉnh sửa hồ sơ">
-                            <span class="avatar-letters" id="profile-avatar-letters">TK</span>
+                            <span class="avatar-letters" id="profile-avatar-letters">PH</span>
                             <span class="avatar-online-dot"></span>
                         </div>
                     </div>
                     <div class="profile-card-content">
-                        <h2 class="profile-user-name" id="profile-user-name" style="cursor: pointer;" title="Bấm để chỉnh sửa hồ sơ">Nguyễn Tuấn Kiệt</h2>
+                        <h2 class="profile-user-name" id="profile-user-name" style="cursor: pointer;" title="Bấm để chỉnh sửa hồ sơ">Thành viên Kỷ Luật</h2>
                         <p class="profile-user-headline" id="profile-user-headline">Executive Discipline & Continuous Learning</p>
                         
                         <div class="profile-card-actions">
@@ -1093,7 +1102,7 @@
                 <form id="edit-profile-form" style="display: flex; flex-direction: column; gap: 1rem;">
                     <div class="form-group">
                         <label for="profile-input-name" style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.35rem; display: block;">Họ và Tên</label>
-                        <input type="text" id="profile-input-name" placeholder="Nguyễn Tuấn Kiệt" style="width: 100%; padding: 0.6rem 0.85rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-family: var(--font-body); font-weight: 600;" required>
+                        <input type="text" id="profile-input-name" placeholder="Ví dụ: Lê Hoàng Nam" style="width: 100%; padding: 0.6rem 0.85rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-family: var(--font-body); font-weight: 600;" required>
                     </div>
 
                     <div class="form-group">
@@ -1104,7 +1113,7 @@
                     <div class="form-row" style="display: flex; gap: 0.85rem;">
                         <div class="form-group" style="width: 110px;">
                             <label for="profile-input-avatar-letters" style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.35rem; display: block;">Chữ viết tắt</label>
-                            <input type="text" id="profile-input-avatar-letters" maxlength="3" placeholder="TK" style="width: 100%; text-transform: uppercase; text-align: center; padding: 0.6rem 0.5rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-weight: 800;">
+                            <input type="text" id="profile-input-avatar-letters" maxlength="3" placeholder="PH" style="width: 100%; text-transform: uppercase; text-align: center; padding: 0.6rem 0.5rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); font-weight: 800;">
                         </div>
                         <div class="form-group" style="flex: 1;">
                             <label for="profile-input-avatar-url" style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.35rem; display: block;">Link ảnh đại diện (Tùy chọn URL)</label>
@@ -1126,6 +1135,56 @@
         </div>
     </div>
 
+    <!-- Special Personalized Welcome Onboarding Modal for New Users -->
+    <div id="onboarding-modal" class="schedule-modal-overlay onboarding-modal-overlay" style="display: none;">
+        <div class="schedule-modal-card onboarding-card">
+            <div class="onboarding-header">
+                <div class="onboarding-badge-tag">HÀNH TRÌNH MỚI</div>
+                <h2 class="onboarding-title">Chào Mừng Bạn Đến Với ProHabit</h2>
+                <p class="onboarding-subtitle">Hãy thiết lập danh tính kỷ luật cá nhân của bạn để bắt đầu không gian làm việc độc quyền.</p>
+            </div>
+
+            <div class="onboarding-avatar-section">
+                <div class="onboarding-avatar-preview" id="onboarding-avatar-preview">
+                    <span class="onboarding-avatar-text" id="onboarding-avatar-text">PH</span>
+                    <span class="avatar-online-dot"></span>
+                </div>
+                <div class="onboarding-avatar-hint">Avatar xem trước tự động theo họ tên bạn nhập</div>
+            </div>
+
+            <form id="onboarding-form" class="onboarding-form">
+                <div class="form-group">
+                    <label for="onboarding-name" class="form-label-bold">Họ và Tên của bạn <span class="required-star">*</span></label>
+                    <input type="text" id="onboarding-name" class="form-input-lg" placeholder="Ví dụ: Lê Hoàng Nam, Nguyễn Bảo An..." required autocomplete="name" autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label-bold">Mục tiêu & Định hướng kỷ luật (Headline)</label>
+                    <div class="onboarding-chips-grid" id="onboarding-headline-chips">
+                        <button type="button" class="onboarding-chip active" data-val="Executive Discipline & Continuous Learning">Executive Discipline</button>
+                        <button type="button" class="onboarding-chip" data-val="Kỹ Sư Phần Mềm & Công Nghệ AI">Kỹ Sư AI & Lập Trình</button>
+                        <button type="button" class="onboarding-chip" data-val="Thủ Khoa & Học Tập Chuyên Sâu">Thủ Khoa & Nghiên Cứu</button>
+                        <button type="button" class="onboarding-chip" data-val="Sức Khỏe Đỉnh Cao & Thể Lực Bền Bỉ">Sức Khỏe & Thể Thao</button>
+                        <button type="button" class="onboarding-chip" data-val="Khởi Nghiệp & Quản Trị Mục Tiêu">Khởi Nghiệp & Quản Trị</button>
+                    </div>
+                    <input type="text" id="onboarding-headline" class="form-input-md" value="Executive Discipline & Continuous Learning" placeholder="Hoặc tự điền chức danh / mục tiêu của bạn...">
+                </div>
+
+                <div class="form-group">
+                    <div class="label-with-action">
+                        <label for="onboarding-motto" class="form-label-bold">Châm ngôn / Tôn chỉ hành động</label>
+                        <button type="button" class="btn-text-action" id="random-motto-btn">Đổi câu khác</button>
+                    </div>
+                    <input type="text" id="onboarding-motto" class="form-input-md" value="Kỷ luật là cầu nối giữa mục tiêu và thành tựu." placeholder="Tôn chỉ sống của bạn...">
+                </div>
+
+                <button type="submit" class="btn btn-primary onboarding-submit-btn" id="onboarding-submit-btn">
+                    <span>Bắt Đầu Hành Trình Kỷ Luật ✨</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Classroom Absence Alert Banner -->
     <div id="classroom-absence-banner" class="classroom-absence-banner" style="display: none;"></div>
 
@@ -1141,6 +1200,6 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script src="app.js?v=9"></script>
+    <script src="app.js?v=10"></script>
 </body>
 </html>

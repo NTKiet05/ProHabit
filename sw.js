@@ -1,18 +1,25 @@
-const CACHE_NAME = 'bro-tracker-v8';
+const CACHE_NAME = 'prohabit-cache-v10';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css',
-  './styles.css?v=8',
-  './app.js',
-  './app.js?v=8',
-  './manifest.json'
+  './styles.css?v=10',
+  './app.js?v=10',
+  './manifest.json',
+  './favicon.svg',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+      return Promise.all(
+        ASSETS.map(url => {
+          return cache.add(url).catch(err => {
+            console.warn('Could not cache asset on install:', url, err);
+          });
+        })
+      );
     }).then(() => self.skipWaiting())
   );
 });
@@ -32,13 +39,24 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+  const url = new URL(e.request.url);
+
+  // Only handle http and https requests, ignore others (e.g. chrome-extension:)
+  if (!url.protocol.startsWith('http')) return;
+
+  // Don't cache Supabase API calls or external dynamic data requests
+  if (url.hostname.includes('supabase.co')) {
+    return;
+  }
+
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch new resource in the background to update cache (stale-while-revalidate)
+        // Stale-while-revalidate: fetch in background and update cache with clone
         fetch(e.request).then((networkResponse) => {
-          if (networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, networkResponse));
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, responseToCache));
           }
         }).catch(() => {/* Ignore network errors offline */});
         return cachedResponse;
