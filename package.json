@@ -1,0 +1,18 @@
+{
+  "name": "prohabit",
+  "version": "1.0.0",
+  "description": "ProHabit - Executive Discipline & Continuous Learning Platform",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "npx electron-packager . ProHabit --platform=win32 --arch=x64 --out=dist --overwrite"
+  },
+  "keywords": [
+    "habit-tracker",
+    "productivity",
+    "electron",
+    "desktop"
+  ],
+  "author": "Nguyen Tuan Kiet",
+  "license": "MIT"
+}
