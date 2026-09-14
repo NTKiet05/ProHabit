@@ -4,6 +4,7 @@
   "description": "ProHabit - Executive Discipline & Continuous Learning Platform",
   "main": "main.js",
   "scripts": {
+    "build": "echo 'ProHabit static build ready'",
     "start": "electron .",
     "pack": "npx electron-packager . ProHabit --platform=win32 --arch=x64 --out=dist --overwrite"
   },
